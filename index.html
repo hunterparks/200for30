@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>200 for 30</title>
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            html {
+                color-scheme: dark;
+                height: 100%;
+            }
+            body {
+                display: grid;
+                grid-template-rows: auto 1fr auto;
+                font-family: sans-serif;
+                height: 100%;
+                padding-block: 0.5rem;
+            }
+            header {
+                margin-block-end: 1rem;
+                margin-inline: auto;
+            }
+
+            main {
+                display: flex;
+                flex-direction: column;
+                margin-inline: auto;
+            }
+
+            main section {
+                background-color: hsl(249, 11%, 22%);
+                border-radius: 0.75rem;
+                margin-bottom: 1rem;
+                padding: 1rem 1.5rem;
+                width: 95vw;
+            }
+            @media (min-width: 768px) {
+                main section {
+                    width: 75vw;
+                }
+            }
+            @media (min-width: 992px) {
+                main section {
+                    width: 55vw;
+                }
+            }
+            @media (min-width: 1200px) {
+                main section {
+                    width: 35vw;
+                }
+            }
+            main section:first-child {
+                align-items: center;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+            main section:not(:first-child) {
+                align-items: center;
+                display: flex;
+                justify-content: space-between;
+            }
+            main section:not(:first-child) h2 {
+                font-weight: normal;
+            }
+            main section:not(:first-child) h2 span {
+                color: gray;
+                font-size: 1rem;
+                font-weight: bold;
+            }
+            main section:not(:first-child) p {
+                font-size: 2rem;
+                font-weight: bold;
+            }
+            #todays-target {
+                color: steelblue;
+            }
+            footer {
+                color: gray;
+                font-size: 0.75rem;
+                font-weight: 600;
+                margin-inline: auto;
+            }
+        </style>
+        <script>
+            const beginningAmount = 357;
+            const beginning = new Date(2023, 6, 17, 22, 44).getTime();
+            const targetAmount = 200;
+            const target = new Date(2026, 1, 4, 7, 45).getTime();
+            let years = 0;
+            let months = 0;
+            let days = 0;
+            let hours = 0;
+            let minutes = 0;
+            let seconds = 0;
+
+            function renderTimeUntil(target) {
+                let content = '';
+                if (years > 0) {
+                    content += `${years} `;
+                    content += years === 1 ? 'year ' : 'years ';
+                }
+                if (months > 0 || content !== '') {
+                    content += `${months} `;
+                    content += months === 1 ? 'month ' : 'months ';
+                }
+                if (days > 0 || content !== '') {
+                    content += `${days} `;
+                    content += days === 1 ? 'day ' : 'days ';
+                }
+                if (hours > 0 || content !== '') {
+                    content += `${hours} `;
+                    content += hours === 1 ? 'hour ' : 'hours ';
+                }
+                if (minutes > 0 || content !== '') {
+                    content += `${minutes} `;
+                    content += minutes === 1 ? 'min ' : 'mins ';
+                }
+                if (seconds > 0 || content !== '') {
+                    content += `${seconds} `;
+                    content += seconds === 1 ? 'sec' : 'secs';
+                }
+                if (content === '') {
+                    content = 'Goal reached?';
+                }
+                target.textContent = content;
+            }
+
+            function setupTimeUntil() {
+                const timeUntil = document.querySelector('#time-until');
+                let difference = target - new Date().getTime();
+
+                const yearInMs = 3.1556952 * 10 ** 10;
+                years = Math.floor(difference / yearInMs);
+                difference -= years * yearInMs;
+
+                const monthInMs = 2.629746 * 10 ** 9;
+                months = Math.floor(difference / monthInMs);
+                difference -= months * monthInMs;
+
+                const dayInMs = 86_400_000;
+                days = Math.floor(difference / dayInMs);
+                difference -= days * dayInMs;
+
+                const hourInMs = 3_600_000;
+                hours = Math.floor(difference / hourInMs);
+                difference -= hours * hourInMs;
+
+                const minuteInMs = 60_000;
+                minutes = Math.floor(difference / minuteInMs);
+                difference -= minutes * minuteInMs;
+
+                const secondInMs = 1000;
+                seconds = Math.floor(difference / secondInMs);
+                difference -= seconds * secondInMs;
+
+                renderTimeUntil(timeUntil);
+
+                setInterval(() => {
+                    seconds -= 1;
+                    if (seconds < 0) {
+                        seconds = 59;
+                        minutes -= 1;
+                        if (minutes < 0) {
+                            minutes = 59;
+                            hours -= 1;
+                            if (hours < 0) {
+                                hours = 23;
+                                days -= 1;
+                                if (days < 0) {
+                                    days = 30;
+                                    months -= 1;
+                                    if (months < 0) {
+                                        months = 11;
+                                        years -= 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    renderTimeUntil(timeUntil);
+                }, 1000);
+            }
+
+            function setupTodaysTarget() {
+                const todaysTargetElement =
+                    document.querySelector('#todays-target');
+                const now = new Date().getTime();
+                const m =
+                    (targetAmount - beginningAmount) / (target - beginning);
+                const b = targetAmount - m * target;
+                const todaysTarget = Math.round(m * now + b);
+                todaysTargetElement.textContent = `${todaysTarget}`;
+
+                const todaysTargetLabel =
+                    todaysTargetElement.previousElementSibling;
+                const amountLeft = todaysTarget - targetAmount;
+                const daysLeft = Math.floor((target - now) / 86_400_000);
+                const amountLeftPerDay = (amountLeft / daysLeft).toFixed(2);
+                todaysTargetLabel.innerHTML += ` <span>(${amountLeftPerDay}/day)<span>`;
+            }
+
+            function main() {
+                setupTimeUntil();
+                setupTodaysTarget();
+            }
+            document.addEventListener('DOMContentLoaded', () => {
+                main();
+            });
+        </script>
+    </head>
+    <body>
+        <header><h1>200 for 30</h1></header>
+        <main>
+            <section>
+                <h2>Time Until</h2>
+                <p id="time-until"></p>
+            </section>
+            <section>
+                <h2>Beginning</h2>
+                <p>357</p>
+            </section>
+            <section>
+                <h2>Today's Target</h2>
+                <p id="todays-target"></p>
+            </section>
+            <section>
+                <h2>End</h2>
+                <p>200</p>
+            </section>
+        </main>
+        <footer>
+            <p>
+                <script>
+                    document.write(
+                        `&copy;${new Date().getFullYear()} 200 for 30`
+                    );
+                </script>
+            </p>
+        </footer>
+    </body>
+</html>
